@@ -116,3 +116,10 @@ from .logics import Logics_Thinking
 from .cosmos import Cosmos
 from .liquid import LFM2VL
 from .insight_v import InsightV
+
+# EmberVLM - Tiny VLM for robot fleet selection (FREE evaluation mode only)
+try:
+    from .embervlm import EmberVLMEval
+except ImportError:
+    EmberVLMEval = None
+

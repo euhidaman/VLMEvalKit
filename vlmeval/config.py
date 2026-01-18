@@ -3,6 +3,12 @@ from vlmeval.api import *
 from functools import partial
 import os
 
+# EmberVLM support (optional - only if EmberVLM is installed)
+try:
+    from vlmeval.vlm.embervlm import EmberVLMEval
+except ImportError:
+    EmberVLMEval = None
+
 PandaGPT_ROOT = None
 MiniGPT4_ROOT = None
 TransCore_ROOT = None
@@ -1342,6 +1348,19 @@ smolvlm_series = {
     "SmolVLM2": partial(SmolVLM2, model_path="HuggingFaceTB/SmolVLM2-2.2B-Instruct"),
 }
 
+# EmberVLM - Tiny VLM for robot fleet selection
+# NOTE: Uses FREE evaluation mode only - NO paid APIs, NO LLM judges
+# Supported benchmarks: MMStar, MMBench, MMMU, ScienceQA, AI2D, TextVQA, DocVQA, ChartQA
+embervlm_series = {}
+if EmberVLMEval is not None:
+    embervlm_series = {
+        # Default: expects EMBERVLM_CHECKPOINT env var or model_path argument
+        "EmberVLM": partial(EmberVLMEval),
+        # Explicitly named variants for different checkpoints
+        "EmberVLM-Small": partial(EmberVLMEval, max_new_tokens=256),
+        "EmberVLM-Long": partial(EmberVLMEval, max_new_tokens=1024),
+    }
+
 instructblip_series = {
     "instructblip_7b": partial(InstructBLIP, name="instructblip_7b"),
     "instructblip_13b": partial(InstructBLIP, name="instructblip_13b"),
@@ -2007,7 +2026,7 @@ model_groups = [
     mmalaya_series, phi3_series, phi4_series, xgen_mm_series, qwen2vl_series,qwen3vl_series,
     slime_series, eagle_series, moondream_series, llama_series, molmo_series,
     kosmos_series, points_series, nvlm_series, vintern_series, h2ovl_series,
-    aria_series, smolvlm_series, sail_series, valley_series, vita_series,
+    aria_series, smolvlm_series, embervlm_series, sail_series, valley_series, vita_series,
     ross_series, emu_series, ola_series, ursa_series, gemma_series,
     long_vita_series, ristretto_series, kimi_series, aguvis_series, hawkvl_series,
     flash_vl, kimi_vllm_series, oryx_series, treevgr_series, varco_vision_series, qtunevl_series, 
