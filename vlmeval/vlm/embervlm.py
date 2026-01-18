@@ -107,16 +107,34 @@ class EmberVLMEval(BaseModel):
         """Load EmberVLM model."""
         try:
             # Add EmberVLM to path if needed
-            embervlm_candidates = [
-                Path(__file__).resolve().parents[4] / "EmberVLM",
+            # Check EMBERVLM_ROOT environment variable first
+            embervlm_root_env = os.environ.get("EMBERVLM_ROOT")
+
+            embervlm_candidates = []
+            if embervlm_root_env:
+                embervlm_candidates.append(Path(embervlm_root_env))
+
+            # VLMEvalKit is at D:/BabyLM/VLMEvalKit or /root/VLMEvalKit
+            # EmberVLM is at D:/BabyLM/EmberVLM or /root/EmberVLM
+            # parents[3] gives BabyLM (or root)
+            vlmeval_root = Path(__file__).resolve().parents[3]
+            embervlm_candidates.extend([
+                vlmeval_root / "EmberVLM",
                 Path.home() / "EmberVLM",
                 Path("/root/EmberVLM"),
-            ]
+            ])
 
+            embervlm_path = None
             for candidate in embervlm_candidates:
-                if candidate.exists() and str(candidate) not in sys.path:
-                    sys.path.insert(0, str(candidate))
+                if candidate.exists():
+                    embervlm_path = candidate
+                    if str(candidate) not in sys.path:
+                        sys.path.insert(0, str(candidate))
+                    logger.info(f"[EmberVLM] Found EmberVLM at {candidate}")
                     break
+
+            if embervlm_path is None:
+                raise ImportError(f"EmberVLM not found. Tried: {embervlm_candidates}")
 
             from embervlm.models import EmberVLM as EmberVLMModel
 
